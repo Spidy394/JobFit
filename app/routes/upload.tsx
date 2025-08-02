@@ -6,6 +6,8 @@ import { useNavigate } from "react-router";
 import { convertPdfToImage } from "~/lib/pdf2img";
 import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "../../constants";
+import { extractTextFromPdf } from "~/lib/pdf2img";
+import { extractSkills } from "~/lib/skill-extractor";
 
 const Upload = () => {
   const { auth, isLoading, fs, ai, kv } = usePuterStore();
@@ -35,6 +37,12 @@ const Upload = () => {
     const uploadedFile = await fs.upload([file]);
     if (!uploadedFile) return setStatusText("Error: Failed to upload file");
 
+    setStatusText("Extracting text from PDF...");
+    const resumeText = await extractTextFromPdf(file);
+    if (!resumeText) {
+      return setStatusText("Error: Failed to extract text from PDF");
+    }
+
     setStatusText("Converting to image...");
     const imageFile = await convertPdfToImage(file);
     if (!imageFile.file) {
@@ -49,14 +57,14 @@ const Upload = () => {
 
     setStatusText("Preparing data...");
     const uuid = generateUUID();
-    const data = {
+    const data: Resume = {
       id: uuid,
       resumePath: uploadedFile.path,
       imagePath: uploadedImage.path,
       companyName,
       jobTitle,
       jobDescription,
-      feedback: "",
+      feedback: null,
     };
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
 
@@ -73,7 +81,18 @@ const Upload = () => {
         ? feedback.message.content
         : feedback.message.content[0].text;
 
-    data.feedback = JSON.parse(feedbackText);
+    data.feedback = JSON.parse(feedbackText) as Feedback;
+
+    // Skill Gap Analysis
+    const resumeSkills = extractSkills(resumeText);
+    const jobDescriptionSkills = extractSkills(jobDescription);
+
+    const missingSkills = jobDescriptionSkills.filter(
+      (skill) => !resumeSkills.includes(skill)
+    );
+
+    data.feedback.skillGaps = missingSkills;
+
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
     setStatusText("Analysis complete, redirecting...");
     console.log(data);

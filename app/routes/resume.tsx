@@ -4,6 +4,7 @@ import { usePuterStore } from "~/lib/puter";
 import Summary from "~/components/Summary";
 import ATS from "~/components/ATS";
 import Details from "~/components/Details";
+import SkillGapAnalysis from "~/components/SkillGapAnalysis";
 
 export const meta = () => [
   { title: "Resumind | Review " },
@@ -84,6 +85,9 @@ const Resume = () => {
                 suggestions={feedback.ATS.tips || []}
               />
               <Details feedback={feedback} />
+              {feedback.skillGaps && (
+                <SkillGapAnalysis skillGaps={feedback.skillGaps} />
+              )}
             </div>
           ) : (
             <img src="/images/resume-scan-2.gif" className="w-full" />
