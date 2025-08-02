@@ -14,7 +14,6 @@ async function loadPdfJs(): Promise<any> {
 
   isLoading = true;
   try {
-    // Try different import approaches for better compatibility
     let lib;
     try {
       // @ts-expect-error - pdfjs-dist/build/pdf.mjs is not a module
