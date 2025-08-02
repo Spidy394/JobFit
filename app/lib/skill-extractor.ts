@@ -61,3 +61,19 @@ export function extractSkills(text: string): string[] {
 
   return foundSkills;
 }
+
+
+export function analyzeSkillGap(
+  resumeSkills: string[],
+  jobDescriptionSkills: string[]
+): string[] {
+  const skillGaps: string[] = [];
+
+  for (const jobSkill of jobDescriptionSkills) {
+    if (!resumeSkills.includes(jobSkill)) {
+      skillGaps.push(jobSkill);
+    }
+  }
+
+  return skillGaps;
+}
