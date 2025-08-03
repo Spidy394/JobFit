@@ -13,7 +13,7 @@ const ScoreBadge: React.FC<ScoreBadgeProps> = ({ score }) => {
     badgeColor = "bg-badge-yellow text-yellow-600";
     badgeText = "Good Start";
   } else {
-    badgeColor = "bg-badge-red text-red-600";
+    badgeColor = "bg-red-100 text-red-700";
     badgeText = "Needs Work";
   }
 

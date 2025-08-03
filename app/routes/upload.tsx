@@ -6,6 +6,87 @@ import { useNavigate } from "react-router";
 import { convertPdfToImage } from "~/lib/pdf2img";
 import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "../../constants";
+import { extractTextFromPdf } from "~/lib/pdf2img";
+
+
+const commonSkills: string[] = [
+  "javascript",
+  "typescript",
+  "react",
+  "angular",
+  "vue",
+  "nodejs",
+  "python",
+  "java",
+  "c++",
+  "c#",
+  "go",
+  "ruby",
+  "php",
+  "html",
+  "css",
+  "sql",
+  "nosql",
+  "mongodb",
+  "postgresql",
+  "mysql",
+  "aws",
+  "azure",
+  "google cloud",
+  "docker",
+  "kubernetes",
+  "git",
+  "agile",
+  "scrum",
+  "rest api",
+  "graphql",
+  "frontend",
+  "backend",
+  "fullstack",
+  "devops",
+  "machine learning",
+  "data science",
+  "artificial intelligence",
+  "ui/ux",
+  "figma",
+  "photoshop",
+  "excel",
+  "word",
+  "powerpoint",
+  "communication",
+  "teamwork",
+  "problem-solving",
+  "leadership",
+  "project management",
+];
+
+function extractSkills(text: string): string[] {
+  const lowerCaseText = text.toLowerCase();
+  const foundSkills: string[] = [];
+
+  for (const skill of commonSkills) {
+    if (lowerCaseText.includes(skill)) {
+      foundSkills.push(skill);
+    }
+  }
+
+  return foundSkills;
+}
+
+function analyzeSkillGap(
+  resumeSkills: string[],
+  jobDescriptionSkills: string[]
+): string[] {
+  const skillGaps: string[] = [];
+
+  for (const jobSkill of jobDescriptionSkills) {
+    if (!resumeSkills.includes(jobSkill)) {
+      skillGaps.push(jobSkill);
+    }
+  }
+
+  return skillGaps;
+}
 
 export const meta = () => [
   { title: "JobFit | Upload" },
@@ -40,6 +121,12 @@ const Upload = () => {
     const uploadedFile = await fs.upload([file]);
     if (!uploadedFile) return setStatusText("Error: Failed to upload file");
 
+    setStatusText("Extracting text from PDF...");
+    const resumeText = await extractTextFromPdf(file);
+    if (!resumeText) {
+      return setStatusText("Error: Failed to extract text from PDF");
+    }
+
     setStatusText("Converting to image...");
     const imageFile = await convertPdfToImage(file);
     if (!imageFile.file) {
@@ -54,14 +141,14 @@ const Upload = () => {
 
     setStatusText("Preparing data...");
     const uuid = generateUUID();
-    const data = {
+    const data: Resume = {
       id: uuid,
       resumePath: uploadedFile.path,
       imagePath: uploadedImage.path,
       companyName,
       jobTitle,
       jobDescription,
-      feedback: "",
+      feedback: null,
     };
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
 
@@ -78,7 +165,18 @@ const Upload = () => {
         ? feedback.message.content
         : feedback.message.content[0].text;
 
-    data.feedback = JSON.parse(feedbackText);
+    data.feedback = JSON.parse(feedbackText) as Feedback;
+
+    // Skill Gap Analysis
+    const resumeSkills = extractSkills(resumeText);
+    const jobDescriptionSkills = extractSkills(jobDescription);
+
+    const missingSkills = jobDescriptionSkills.filter(
+      (skill) => !resumeSkills.includes(skill)
+    );
+
+    data.feedback.skillGaps = missingSkills;
+
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
     setStatusText("Analysis complete, redirecting...");
     console.log(data);
@@ -105,52 +203,55 @@ const Upload = () => {
       <Navbar />
 
       <section className="main-section">
-        <div className="page-heading py-16">
-          <h1>Smart feedback for your dream job</h1>
+        <div className="page-heading py-16 text-center max-w-3xl mx-auto">
+          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight mb-4">Smart feedback for your dream job</h1>
           {isProcessing ? (
             <>
-              <h2>{statusText}</h2>
-              <img src="/images/resume-scan.gif" className="w-full" />
+              <h2 className="text-xl text-gray-600 mb-8">{statusText}</h2>
+              <img src="/images/resume-scan.gif" className="w-full max-w-md mx-auto" />
             </>
           ) : (
-            <h2>Drop your resume for an ATS score and improvement tips</h2>
+            <h2 className="text-xl text-gray-600 mb-8">Drop your resume for an ATS score and improvement tips</h2>
           )}
           {!isProcessing && (
             <form
               id="upload-form"
               onSubmit={handleSubmit}
-              className="flex flex-col gap-4 mt-8"
+              className="flex flex-col gap-6 mt-8 bg-white p-8 rounded-2xl shadow-lg border border-gray-100"
             >
               <div className="form-div">
-                <label htmlFor="company-name">Company Name</label>
+                <label htmlFor="company-name" className="text-lg font-medium text-gray-700 mb-2">Company Name</label>
                 <input
                   type="text"
                   name="company-name"
                   placeholder="Company Name"
                   id="company-name"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
                 />
               </div>
               <div className="form-div">
-                <label htmlFor="job-title">Job Title</label>
+                <label htmlFor="job-title" className="text-lg font-medium text-gray-700 mb-2">Job Title</label>
                 <input
                   type="text"
                   name="job-title"
                   placeholder="Job Title"
                   id="job-title"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
                 />
               </div>
               <div className="form-div">
-                <label htmlFor="job-description">Job Description</label>
+                <label htmlFor="job-description" className="text-lg font-medium text-gray-700 mb-2">Job Description</label>
                 <textarea
                   rows={5}
                   name="job-description"
                   placeholder="Job Description"
                   id="job-description"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
                 />
               </div>
 
               <div className="form-div">
-                <label htmlFor="uploader">Upload Resume</label>
+                <label htmlFor="uploader" className="text-lg font-medium text-gray-700 mb-2">Upload Resume</label>
                 <FileUploader onFileSelect={handleFileSelect} />
               </div>
 

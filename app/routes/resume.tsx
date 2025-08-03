@@ -4,6 +4,7 @@ import { usePuterStore } from "~/lib/puter";
 import Summary from "~/components/Summary";
 import ATS from "~/components/ATS";
 import Details from "~/components/Details";
+import SkillGapAnalysis from "~/components/SkillGapAnalysis";
 
 export const meta = () => [
   { title: "JobFit | Review " },
@@ -60,22 +61,22 @@ const Resume = () => {
           </span>
         </Link>
       </nav>
-      <div className="flex flex-row w-full max-lg:flex-col-reverse">
-        <section className="feedback-section bg-[url('/images/bg-small.svg') bg-cover h-[100vh] sticky top-0 items-center justify-center">
+      <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto py-8 px-4 gap-8">
+        <section className="lg:w-1/2 flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-lg border border-gray-100">
           {imageUrl && resumeUrl && (
-            <div className="animate-in fade-in duration-1000 gradient-border max-sm:m-0 h-[90%] max-wxl:h-fit w-fit">
-              <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+            <div className="w-full h-full max-h-[800px] rounded-xl overflow-hidden shadow-md">
+              <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                 <img
                   src={imageUrl}
-                  className="w-full h-full object-contain rounded-2xl"
+                  className="w-full h-full object-contain object-top rounded-xl"
                   title="resume"
                 />
               </a>
             </div>
           )}
         </section>
-        <section className="feedback-section">
-          <h2 className="text-4xl !text-black font-bold">Resume Review</h2>
+        <section className="lg:w-1/2 flex flex-col gap-8">
+          <h2 className="text-4xl font-bold text-gray-800">Resume Review</h2>
           {feedback ? (
             <div className="flex flex-col gap-8 animate-in fade-in duration-1000">
               <Summary feedback={feedback} />
@@ -84,9 +85,14 @@ const Resume = () => {
                 suggestions={feedback.ATS.tips || []}
               />
               <Details feedback={feedback} />
+              {feedback.skillGaps && (
+                <SkillGapAnalysis skillGaps={feedback.skillGaps} />
+              )}
             </div>
           ) : (
-            <img src="/images/resume-scan-2.gif" className="w-full" />
+            <div className="flex items-center justify-center h-64">
+              <img src="/images/resume-scan-2.gif" className="w-40" />
+            </div>
           )}
         </section>
       </div>

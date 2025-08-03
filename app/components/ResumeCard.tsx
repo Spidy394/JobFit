@@ -27,20 +27,20 @@ const ResumeCard = ({
       to={`/resume/${id}`}
       className="resume-card animate-in fade-in duration-1000"
     >
-      <div className="resume-card-header">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-row justify-between items-start gap-4 mb-4">
+        <div className="flex flex-col gap-1">
           {companyName && (
-            <h2 className="!text-black font-bold break-words">{companyName}</h2>
+            <h2 className="text-xl font-bold text-gray-800 break-words">{companyName}</h2>
           )}
           {jobTitle && (
-            <h3 className="text-lg break-words text-gray-500">{jobTitle}</h3>
+            <h3 className="text-base text-gray-600 break-words">{jobTitle}</h3>
           )}
           {!companyName && !jobTitle && (
-            <h2 className="!text-black font-bold">Resume</h2>
+            <h2 className="text-xl font-bold text-gray-800">Resume</h2>
           )}
         </div>
         <div className="flex-shrink-0">
-          <ScoreCircle score={feedback.overallScore} />
+          <ScoreCircle score={feedback?.overallScore || 0} />
         </div>
       </div>
       {resumeUrl && (
