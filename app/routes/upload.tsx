@@ -7,6 +7,11 @@ import { convertPdfToImage } from "~/lib/pdf2img";
 import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "../../constants";
 
+export const meta = () => [
+  { title: "JobFit | Upload" },
+  { name: "description", content: "Add details and upload your resume" },
+];
+
 const Upload = () => {
   const { auth, isLoading, fs, ai, kv } = usePuterStore();
   const navigate = useNavigate();
